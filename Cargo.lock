@@ -1756,6 +1756,7 @@ dependencies = [
  "rocket_contrib",
  "rust-argon2",
  "serde",
+ "serde_json",
 ]
 
 [[package]]

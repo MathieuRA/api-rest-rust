@@ -12,6 +12,7 @@ use crate::routes::{matchs, users};
 mod database;
 mod routes;
 mod models;
+mod structs;
 
 #[rocket::main]
 async fn main() {

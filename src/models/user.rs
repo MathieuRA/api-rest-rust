@@ -1,8 +1,10 @@
 use argon2::{Config, hash_encoded};
-use mongodb::bson::Uuid;
+use mongodb::bson::Uuid as Uuid_mongo;
 use rand::{Rng, thread_rng};
 use rand::distributions::Alphanumeric;
 use serde::{Deserialize, Serialize};
+
+type Uuid = Uuid_mongo;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct User {
@@ -18,6 +20,13 @@ pub struct InsertableUser {
     pub name: String,
     pub email: String,
     pub password: String,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct ResponseUser {
+    pub _id: Uuid,
+    pub name: String,
+    pub email: String,
 }
 
 
@@ -48,6 +57,16 @@ impl User {
             Ok(hashed_password) => hashed_password,
             // FIXME: Handle case that error triggered
             Err(err) => panic!("{:?}", err)
+        }
+    }
+}
+
+impl ResponseUser {
+    pub fn from_user(user: User) -> Self {
+        ResponseUser {
+            _id: user._id,
+            name: user.name,
+            email: user.email,
         }
     }
 }
