@@ -1,0 +1,16 @@
+[package]
+name = "rust-api"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+rand = "0.8.5"
+rocket = { version = "0.5.0-rc.1", features = ["json"] }
+rocket_contrib = { version = "0.4.10", features = ["helmet", "uuid"] }
+rust-argon2 = "1.0.0"
+mongodb = "2.1.0"
+serde = { version = "1.0.136", features = ["derive"] }
+dotenv = "0.15.0"
+dotenv_codegen = "0.15.0"
