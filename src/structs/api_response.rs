@@ -16,6 +16,19 @@ impl ApiResponse {
             message,
         }
     }
+    pub fn not_found(message: JsonValue) -> Self {
+        ApiResponse {
+            status: Status::NotFound,
+            message,
+        }
+    }
+    pub fn forbidden(message: JsonValue) -> Self {
+        ApiResponse {
+            status: Status::Forbidden,
+            message,
+        }
+    }
+
     pub fn err(message: JsonValue) -> Self {
         ApiResponse {
             status: Status::InternalServerError,

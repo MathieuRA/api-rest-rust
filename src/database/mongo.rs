@@ -25,7 +25,7 @@ impl MongoDB {
         }
     }
 
-    pub fn get_users_col(&self) -> Collection<User> {
+    pub fn get_users_coll(&self) -> Collection<User> {
         self.db.collection("users")
     }
 }

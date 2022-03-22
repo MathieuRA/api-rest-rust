@@ -7,7 +7,7 @@ edition = "2021"
 
 [dependencies]
 rand = "0.8.5"
-rocket = { version = "0.5.0-rc.1", features = ["json"] }
+rocket = { version = "0.5.0-rc.1", features = ["json", "secrets", "uuid"] }
 rocket_contrib = { version = "0.4.10", features = ["helmet", "uuid"] }
 rust-argon2 = "1.0.0"
 mongodb = "2.1.0"
