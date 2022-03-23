@@ -1,6 +1,7 @@
 use rocket::{Request, response, Response};
 use rocket::http::{ContentType, Status};
 use rocket::response::Responder;
+use rocket_contrib::json;
 use rocket_contrib::json::JsonValue;
 
 #[derive(Debug)]
@@ -14,6 +15,18 @@ impl ApiResponse {
         ApiResponse {
             status: Status::Ok,
             message,
+        }
+    }
+    pub fn created(message: JsonValue) -> Self {
+        ApiResponse {
+            status: Status::Created,
+            message,
+        }
+    }
+    pub fn no_content() -> Self {
+        ApiResponse {
+            status: Status::NoContent,
+            message: json!({}),
         }
     }
     pub fn not_found(message: JsonValue) -> Self {

@@ -6,7 +6,7 @@ use rocket::serde::uuid::Uuid;
 use rocket::State;
 use rocket_contrib::json;
 
-use crate::models::user::{AuthTokenUser, CredentialUser, InsertableUser, ResponseUser, User};
+use crate::models::user::{AuthTokenUser, CredentialUser, EditableUser, InsertableUser, ResponseUser, User};
 use crate::MongoDB;
 use crate::structs::api_response::ApiResponse;
 
@@ -29,7 +29,7 @@ pub async fn new_user_rt(mongo_db: &State<MongoDB>, user: Json<InsertableUser>) 
         .insert_one(&new_user, None)
         .await
         .unwrap();
-    ApiResponse::ok(json!(ResponseUser::from_user(new_user)))
+    ApiResponse::created(json!(ResponseUser::from_user(new_user)))
 }
 
 #[post("/users/login", format = "json", data = "<credential>")]
@@ -65,4 +65,19 @@ pub async fn login_user_rt(mongo_db: &State<MongoDB>, cookies: &CookieJar<'_>, c
     } else {
         ApiResponse::not_found(json!("Not found"))
     }
+}
+
+#[put("/users", format = "json", data = "<updated_user>")]
+pub async fn edit_user_rt(mongo_db: &State<MongoDB>, user: User, updated_user: Json<EditableUser>) -> ApiResponse {
+    let filtered_updated_user = user.update((*updated_user).clone());
+    mongo_db.get_users_coll()
+        .find_one_and_replace(doc! {"_id": &filtered_updated_user._id}, &filtered_updated_user, None)
+        .await.unwrap();
+    ApiResponse::ok(json!(ResponseUser::from_user(filtered_updated_user)))
+}
+
+#[delete("/users")]
+pub async fn delete_user_rt(mongo_db: &State<MongoDB>, user: User) -> ApiResponse {
+    mongo_db.get_users_coll().find_one_and_delete(doc! { "_id": user._id}, None).await;
+    ApiResponse::no_content()
 }

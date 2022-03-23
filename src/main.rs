@@ -21,7 +21,9 @@ async fn main() {
         .mount("/api/v1", routes![
             users::get_user_rt,
             users::new_user_rt,
-            users::login_user_rt
+            users::login_user_rt,
+            users::delete_user_rt,
+            users::edit_user_rt
         ])
         .manage(MongoDB::new("rust-api").await)
         .launch()

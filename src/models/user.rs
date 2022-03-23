@@ -1,3 +1,5 @@
+use std::ops::RangeTo;
+
 use argon2::{Config, hash_encoded};
 use mongodb::bson::{doc, Uuid as Uuid_mongo};
 use rand::{Rng, thread_rng};
@@ -8,11 +10,12 @@ use rocket::outcome::IntoOutcome;
 use rocket::Request;
 use rocket::request::{FromRequest, Outcome};
 use serde::{Deserialize, Serialize};
+use serde_json::{json, Value};
 
 use crate::MongoDB;
+use crate::structs::common::Optional;
 
 type Uuid = Uuid_mongo;
-
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct AuthTokenUser {
@@ -23,6 +26,13 @@ pub struct AuthTokenUser {
 pub struct CredentialUser {
     pub name: String,
     pub password: String,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct EditableUser {
+    pub email: Option<String>,
+    pub name: Option<String>,
+    pub password: Option<String>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -86,6 +96,21 @@ impl User {
         User::new(insertable.name, insertable.email, insertable.password)
     }
 
+    pub async fn from_request(request: &Request<'_>) -> Option<Self> {
+        match request.cookies().get_private("session_id") {
+            Some(cookie) => {
+                match serde_json::from_str::<AuthTokenUser>(cookie.value()) {
+                    Ok(token) => {
+                        request.rocket().state::<MongoDB>().unwrap().get_users_coll()
+                            .find_one(doc! {"_id": token._id}, None).await.unwrap()
+                    }
+                    Err(_) => None
+                }
+            }
+            None => None
+        }
+    }
+
     fn hash_password(password: &String, salt: &String) -> String {
         match hash_encoded(password.as_bytes(), salt.as_bytes(), &Config::default()) {
             Ok(hashed_password) => hashed_password,
@@ -94,9 +119,34 @@ impl User {
         }
     }
 
+    pub fn update(mut self, editable: EditableUser) -> Self {
+        match editable.password {
+            Some(pass) => self.password = User::hash_password(&pass, &self.salt),
+            None => {}
+        };
+        match editable.email {
+            Some(mail) => self.email = mail,
+            None => {}
+        };
+        match editable.name {
+            Some(name) => self.name = name,
+            None => {}
+        };
+        self
+    }
+
     pub fn match_password(&self, password: &String) -> bool {
-        // FIXME: Handle error case
         argon2::verify_encoded(&self.password, password.as_bytes()).unwrap()
+    }
+}
+
+#[rocket::async_trait]
+impl<'r> FromRequest<'r> for Optional<User> {
+    type Error = ();
+    async fn from_request(request: &'r Request<'_>) -> Outcome<Self, Self::Error> {
+        Outcome::Success(Optional {
+            some: User::from_request(request).await
+        })
     }
 }
 
@@ -105,22 +155,8 @@ impl<'r> FromRequest<'r> for User {
     type Error = ();
 
     async fn from_request(request: &'r Request<'_>) -> Outcome<Self, Self::Error> {
-        match request.cookies().get_private("session_id") {
-            Some(cookie) => {
-                match serde_json::from_str::<AuthTokenUser>(cookie.value()) {
-                    Ok(token) => {
-                        let mongoDB = request.rocket().state::<MongoDB>().unwrap();
-                        match mongoDB.get_users_coll()
-                            .find_one(doc! {"_id": token._id}, None).await.unwrap() {
-                            Some(user) => Outcome::Success(user),
-                            None => Outcome::Failure((Status::NotFound, ()))
-                        }
-                    }
-                    // Token is not following the good format.
-                    Err(_) => Outcome::Failure((Status::BadRequest, ()))
-                }
-            }
-            // No cookie found
+        match User::from_request(request).await {
+            Some(user) => Outcome::Success(user),
             None => Outcome::Failure((Status::Forbidden, ()))
         }
     }
