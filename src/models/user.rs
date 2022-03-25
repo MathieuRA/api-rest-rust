@@ -9,10 +9,13 @@ use rocket::http::Status;
 use rocket::outcome::IntoOutcome;
 use rocket::Request;
 use rocket::request::{FromRequest, Outcome};
+use rocket::request::local_cache;
+use rocket_contrib::json;
 use serde::{Deserialize, Serialize};
-use serde_json::{json, Value};
+use serde_json::Value;
 
-use crate::MongoDB;
+use crate::{ApiResponseDetails, MongoDB};
+use crate::structs::api_response::ApiResponse;
 use crate::structs::common::Optional;
 
 type Uuid = Uuid_mongo;
@@ -62,6 +65,10 @@ impl AuthTokenUser {
     pub fn to_string(&self) -> String {
         serde_json::to_string(&self).unwrap()
     }
+
+    pub fn from_str(str: &str) -> serde_json::error::Result<AuthTokenUser> {
+        serde_json::from_str::<AuthTokenUser>(str)
+    }
 }
 
 impl ResponseUser {
@@ -99,7 +106,7 @@ impl User {
     pub async fn from_request(request: &Request<'_>) -> Option<Self> {
         match request.cookies().get_private("session_id") {
             Some(cookie) => {
-                match serde_json::from_str::<AuthTokenUser>(cookie.value()) {
+                match AuthTokenUser::from_str(cookie.value()) {
                     Ok(token) => {
                         request.rocket().state::<MongoDB>().unwrap().get_users_coll()
                             .find_one(doc! {"_id": token._id}, None).await.unwrap()
@@ -157,7 +164,16 @@ impl<'r> FromRequest<'r> for User {
     async fn from_request(request: &'r Request<'_>) -> Outcome<Self, Self::Error> {
         match User::from_request(request).await {
             Some(user) => Outcome::Success(user),
-            None => Outcome::Failure((Status::Forbidden, ()))
+            None => {
+                request.local_cache(|| ApiResponseDetails {
+                    intl_id: "authentication_required".to_string(),
+                    reason: "You must be authenticated.".to_string(),
+                    data: None,
+                });
+                Outcome::Failure((Status::Forbidden, ()))
+            }
         }
     }
 }
+
+

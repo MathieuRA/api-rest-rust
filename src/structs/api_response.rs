@@ -1,23 +1,35 @@
+use std::any::Any;
+use std::fmt::Debug;
+
 use rocket::{Request, response, Response};
 use rocket::http::{ContentType, Status};
 use rocket::response::Responder;
 use rocket_contrib::json;
 use rocket_contrib::json::JsonValue;
+use serde::{Deserialize, Serialize};
+use serde_json::Value;
 
 #[derive(Debug)]
 pub struct ApiResponse {
     status: Status,
-    message: JsonValue,
+    message: ApiResponseDetails,
+}
+
+#[derive(Debug, Serialize, Clone)]
+pub struct ApiResponseDetails {
+    pub intl_id: String,
+    pub reason: String,
+    pub data: Option<Vec<JsonValue>>,
 }
 
 impl ApiResponse {
-    pub fn ok(message: JsonValue) -> Self {
+    pub fn ok(message: ApiResponseDetails) -> Self {
         ApiResponse {
             status: Status::Ok,
             message,
         }
     }
-    pub fn created(message: JsonValue) -> Self {
+    pub fn created(message: ApiResponseDetails) -> Self {
         ApiResponse {
             status: Status::Created,
             message,
@@ -26,23 +38,27 @@ impl ApiResponse {
     pub fn no_content() -> Self {
         ApiResponse {
             status: Status::NoContent,
-            message: json!({}),
+            message: ApiResponseDetails {
+                intl_id: "no_content".to_string(),
+                reason: "No content.".to_string(),
+                data: None,
+            },
         }
     }
-    pub fn not_found(message: JsonValue) -> Self {
+    pub fn not_found(message: ApiResponseDetails) -> Self {
         ApiResponse {
             status: Status::NotFound,
             message,
         }
     }
-    pub fn forbidden(message: JsonValue) -> Self {
+    pub fn forbidden(message: ApiResponseDetails) -> Self {
         ApiResponse {
             status: Status::Forbidden,
             message,
         }
     }
 
-    pub fn err(message: JsonValue) -> Self {
+    pub fn internal_error(message: ApiResponseDetails) -> Self {
         ApiResponse {
             status: Status::InternalServerError,
             message,
