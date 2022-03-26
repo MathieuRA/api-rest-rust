@@ -23,16 +23,24 @@ pub struct ApiResponseDetails {
 }
 
 impl ApiResponse {
-    pub fn ok(message: ApiResponseDetails) -> Self {
+    pub fn ok(message: (String, String), data: Option<Vec<JsonValue>>) -> Self {
         ApiResponse {
             status: Status::Ok,
-            message,
+            message: ApiResponseDetails {
+                intl_id: message.0,
+                reason: message.1,
+                data,
+            },
         }
     }
-    pub fn created(message: ApiResponseDetails) -> Self {
+    pub fn created(message: (String, String), data: Option<Vec<JsonValue>>) -> Self {
         ApiResponse {
             status: Status::Created,
-            message,
+            message: ApiResponseDetails {
+                intl_id: message.0,
+                reason: message.1,
+                data,
+            },
         }
     }
     pub fn no_content() -> Self {
@@ -45,23 +53,35 @@ impl ApiResponse {
             },
         }
     }
-    pub fn not_found(message: ApiResponseDetails) -> Self {
+    pub fn not_found(message: (String, String), data: Option<Vec<JsonValue>>) -> Self {
         ApiResponse {
             status: Status::NotFound,
-            message,
+            message: ApiResponseDetails {
+                intl_id: message.0,
+                reason: message.1,
+                data,
+            },
         }
     }
-    pub fn forbidden(message: ApiResponseDetails) -> Self {
+    pub fn forbidden(message: (String, String), data: Option<Vec<JsonValue>>) -> Self {
         ApiResponse {
             status: Status::Forbidden,
-            message,
+            message: ApiResponseDetails {
+                intl_id: message.0,
+                reason: message.1,
+                data,
+            },
         }
     }
 
-    pub fn internal_error(message: ApiResponseDetails) -> Self {
+    pub fn internal_error(message: (String, String), data: Option<Vec<JsonValue>>) -> Self {
         ApiResponse {
             status: Status::InternalServerError,
-            message,
+            message: ApiResponseDetails {
+                intl_id: message.0,
+                reason: message.1,
+                data,
+            },
         }
     }
 }

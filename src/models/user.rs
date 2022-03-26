@@ -14,7 +14,7 @@ use rocket_contrib::json;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
-use crate::{ApiResponseDetails, MongoDB};
+use crate::{ApiResponseDetails, IntlMessage, MongoDB};
 use crate::structs::api_response::ApiResponse;
 use crate::structs::common::Optional;
 
@@ -165,9 +165,11 @@ impl<'r> FromRequest<'r> for User {
         match User::from_request(request).await {
             Some(user) => Outcome::Success(user),
             None => {
+                let intl_message = request.rocket().state::<IntlMessage>().unwrap()
+                    .get_by_intl_id("authentication_required");
                 request.local_cache(|| ApiResponseDetails {
-                    intl_id: "authentication_required".to_string(),
-                    reason: "You must be authenticated.".to_string(),
+                    intl_id: intl_message.0,
+                    reason: intl_message.1,
                     data: None,
                 });
                 Outcome::Failure((Status::Forbidden, ()))
