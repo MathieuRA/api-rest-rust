@@ -15,7 +15,7 @@ pub struct ApiResponse {
     message: ApiResponseDetails,
 }
 
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct ApiResponseDetails {
     pub intl_id: String,
     pub reason: String,

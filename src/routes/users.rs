@@ -1,4 +1,8 @@
+use std::any::Any;
+
 use mongodb::bson::doc;
+use mongodb::error::{Error, ErrorKind, WriteFailure};
+use mongodb::options::InsertOneOptions;
 use rocket::futures::{Stream, StreamExt, TryStreamExt};
 use rocket::http::{Cookie, CookieJar};
 use rocket::serde::json::Json;
@@ -31,9 +35,43 @@ pub async fn get_user_rt(intl_message: &State<IntlMessage<'_>>, id: Uuid, user: 
 #[post("/users", format = "json", data = "<user>")]
 pub async fn new_user_rt(mongo_db: &State<MongoDB>, intl_message: &State<IntlMessage<'_>>, user: Json<InsertableUser>) -> ApiResponse {
     let new_user = User::from_insertable((*user).clone());
-    mongo_db.get_users_coll()
-        .insert_one(&new_user, None)
-        .await;
+    /**
+    FIXME: SECURITY POINT
+    In case email already exist, we return a success response to avoid user enumeration from
+    the register functionality. But this have an high impact on the UX.
+    Define with the whole team, what behaviour should be adopted.
+    If UX is a prior, remove the FAKE_USER creation on the user_login route
+    coz it voluntary affect the app performance to avoid user enumeration from the login
+    functionality.
+    There is no sense to have a secure login route, but not the register route.
+    If we want to return an error when email already take, we can do above
+          match mongo_db.get_users_coll().insert_one(&new_user, None).await {
+              Ok(_) => {
+                  // return API RESPONSE OK
+              }
+              Err(err) => {
+                  match *err.kind {
+                      ErrorKind::Write(err) => {
+                          match err {
+                              WriteFailure::WriteError(error) => {
+                                  // error code for duplicate keys (email)
+                                  if error.code == 11000 {
+                                      // return API RESPONSE to say email already taken
+                                  }
+                              }
+                              _ => {
+                                  // ERROR 500
+                              }
+                          }
+                      }
+                      _ => {
+                          // ERROR 500
+                      }
+                  }
+              }
+          }
+     */
+    mongo_db.get_users_coll().insert_one(&new_user, None).await;
     ApiResponse::created(
         intl_message.get_by_intl_id("usr_created"),
         Some(vec![json!(ResponseUser::from_user(new_user))]),

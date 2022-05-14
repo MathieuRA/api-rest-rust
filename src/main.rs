@@ -7,15 +7,15 @@ extern crate rocket;
 use std::collections::{HashMap, HashSet};
 
 use dotenv::dotenv;
+use rocket::{Build, Request, Rocket};
 use rocket::http::Status;
-use rocket::Request;
 use rocket_contrib::json;
 use rocket_contrib::json::JsonValue;
 use serde::{Deserialize, Serialize};
 
 use crate::database::mongo::MongoDB;
 use crate::intl_message::IntlMessage;
-use crate::routes::users;
+use crate::routes::{ping, users};
 use crate::structs::api_response::{ApiResponse, ApiResponseDetails};
 
 mod database;
@@ -23,6 +23,8 @@ pub mod routes;
 mod models;
 mod structs;
 mod intl_message;
+#[cfg(test)]
+mod tests;
 
 #[catch(403)]
 fn forbidden_error(req: &Request) -> ApiResponse {
@@ -42,8 +44,17 @@ fn forbidden_error(req: &Request) -> ApiResponse {
 #[rocket::main]
 async fn main() {
     dotenv().ok();
+    rocket_builder()
+        .await.launch()
+        .await.expect("Rocket build instance");
+}
+
+async fn rocket_builder() -> Rocket<Build> {
     rocket::build()
         .register("/", catchers![forbidden_error])
+        .mount("/", routes![
+            ping::ping_rt
+        ])
         .mount("/api/v1", routes![
             users::get_user_rt,
             users::new_user_rt,
@@ -53,7 +64,4 @@ async fn main() {
         ])
         .manage(IntlMessage::new())
         .manage(MongoDB::new("rust-api").await)
-        .launch()
-        .await.expect("Rocket build instance");
 }
-

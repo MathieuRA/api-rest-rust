@@ -6,12 +6,15 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+dotenv = "0.15.0"
+dotenv_codegen = "0.15.0"
+mongodb = "2.1.0"
 rand = "0.8.5"
 rocket = { version = "0.5.0-rc.1", features = ["json", "secrets", "uuid"] }
 rocket_contrib = { version = "0.4.10", features = ["helmet", "uuid"] }
 rust-argon2 = "1.0.0"
-mongodb = "2.1.0"
 serde = { version = "1.0.136", features = ["derive"] }
 serde_json = "1.0.79"
-dotenv = "0.15.0"
-dotenv_codegen = "0.15.0"
+[dev-dependencies]
+async_once = "0.2.6"
+lazy_static = "1.4.0"
