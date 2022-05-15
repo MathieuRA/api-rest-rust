@@ -1,19 +1,12 @@
-use std::ops::RangeTo;
-
 use argon2::{Config, hash_encoded};
 use mongodb::bson::{doc, Uuid as Uuid_mongo};
 use mongodb::error::{ErrorKind, WriteFailure};
 use rand::{Rng, thread_rng};
 use rand::distributions::Alphanumeric;
-use rocket::{Request, State};
-use rocket::futures::TryFutureExt;
+use rocket::Request;
 use rocket::http::Status;
-use rocket::outcome::IntoOutcome;
 use rocket::request::{FromRequest, Outcome};
-use rocket::request::local_cache;
-use rocket_contrib::json;
 use serde::{Deserialize, Serialize};
-use serde_json::Value;
 
 use crate::{ApiResponseDetails, IntlMessage, MongoDB};
 use crate::structs::api_response::ApiResponse;

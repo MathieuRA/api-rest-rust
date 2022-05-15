@@ -1,9 +1,9 @@
-use std::any::Any;
+
 
 use mongodb::bson::doc;
-use mongodb::error::{Error, ErrorKind, WriteFailure};
-use mongodb::options::InsertOneOptions;
-use rocket::futures::{Stream, StreamExt, TryStreamExt};
+
+
+
 use rocket::http::{Cookie, CookieJar};
 use rocket::serde::json::Json;
 use rocket::serde::uuid::Uuid;
@@ -12,7 +12,7 @@ use rocket_contrib::json;
 
 use crate::{IntlMessage, MongoDB};
 use crate::models::user::{AuthTokenUser, CredentialUser, EditableUser, InsertableUser, ResponseUser, User};
-use crate::structs::api_response::{ApiResponse, ApiResponseDetails};
+use crate::structs::api_response::{ApiResponse};
 
 const FAKE_EMAIL: &str = "to_prevent_time_based_account_enumeration";
 const FAKE_PASSWORD: &str = "$argon2i$v=19$m=4096,t=3,p=1$TWJKeTdoZ3pPWDdaS2dNTnpZN2g$TkFyv+ZHQVlER2hWlMBnq+DHTJvanckCTgx+ULeObAs";
@@ -88,9 +88,11 @@ pub async fn login_user_rt(mongo_db: &State<MongoDB>, intl_message: &State<IntlM
 #[put("/users", format = "json", data = "<updated_user>")]
 pub async fn edit_user_rt(mongo_db: &State<MongoDB>, intl_message: &State<IntlMessage<'_>>, user: User, updated_user: Json<EditableUser>) -> ApiResponse {
     let filtered_updated_user = user.update((*updated_user).clone());
+    // TODO: Handle error possibility
     mongo_db.get_users_coll()
         .find_one_and_replace(doc! {"_id": &filtered_updated_user._id}, &filtered_updated_user, None)
-        .await;
+        .await
+        .unwrap();
 
     ApiResponse::ok(
         intl_message.get_by_intl_id("usr_edited"),
@@ -100,6 +102,7 @@ pub async fn edit_user_rt(mongo_db: &State<MongoDB>, intl_message: &State<IntlMe
 
 #[delete("/users")]
 pub async fn delete_user_rt(mongo_db: &State<MongoDB>, user: User) -> ApiResponse {
-    mongo_db.get_users_coll().find_one_and_delete(doc! { "_id": user._id}, None).await;
+    // TODO: Must throw an error in case the deletion throw
+    mongo_db.get_users_coll().find_one_and_delete(doc! { "_id": user._id}, None).await.unwrap();
     ApiResponse::no_content()
 }

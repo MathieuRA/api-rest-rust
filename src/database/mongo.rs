@@ -1,4 +1,4 @@
-use dotenv::dotenv;
+
 use mongodb::{Client, Collection, Database, IndexModel};
 use mongodb::bson::doc;
 use mongodb::options::{ClientOptions, IndexOptions};
