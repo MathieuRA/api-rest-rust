@@ -1,25 +1,30 @@
 use rocket::futures::TryFutureExt;
 use rocket::http::{ContentType, Status};
 use rocket::local::blocking::Client;
+use rocket::State;
 use rocket_contrib::json;
 use serde::{Deserializer, Serialize};
 
-use crate::{ApiResponse, ApiResponseDetails, IntlMessage};
-use crate::models::user::ResponseUser;
+use crate::{ApiResponse, ApiResponseDetails, IntlMessage, MongoDB};
+use crate::models::user::{InsertableUser, ResponseUser};
 use crate::tests::client;
 
+const NEW_USER_BODY: &str = r##"{
+"name":"",
+"email":"unit_test_endpoint@mycleargames.com",
+"password":"Toto"
+}"##;
+
 #[rocket::async_test]
-async fn new_user_rt_test() {
+async fn user_rt() {
     let intl_message = IntlMessage::new();
     let client = client().await;
+
+    // ---- REGISTER NEW USER
     let resp = client
         .post("/api/v1/users")
         .header(ContentType::JSON)
-        .body(r##"{
-        "name":"Toto",
-        "email":"Toto",
-        "password":"Toto"
-        }"##)
+        .body(NEW_USER_BODY)
         .dispatch().await;
 
     assert_eq!(resp.status(), Status::Created);
@@ -33,4 +38,6 @@ async fn new_user_rt_test() {
     assert_eq!(api_response.intl_id, msg.0);
     assert_eq!(api_response.reason, msg.1);
     assert_ne!(api_response.data, None);
+
+    // ---- LOGIN USER
 }

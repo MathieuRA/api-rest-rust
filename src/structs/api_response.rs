@@ -33,6 +33,16 @@ impl ApiResponse {
             },
         }
     }
+    pub fn conflict(message: (String, String), data: Option<Vec<JsonValue>>) -> Self {
+        ApiResponse {
+            status: Status::Conflict,
+            message: ApiResponseDetails {
+                intl_id: message.0,
+                reason: message.1,
+                data,
+            },
+        }
+    }
     pub fn created(message: (String, String), data: Option<Vec<JsonValue>>) -> Self {
         ApiResponse {
             status: Status::Created,
@@ -83,6 +93,10 @@ impl ApiResponse {
                 data,
             },
         }
+    }
+
+    pub fn get_content(self) -> ApiResponseDetails {
+        self.message
     }
 }
 

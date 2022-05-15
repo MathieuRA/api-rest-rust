@@ -5,7 +5,9 @@ use rocket::local::asynchronous::Client;
 use crate::rocket_builder;
 
 #[cfg(test)]
-mod users_test;
+mod user_test;
+#[cfg(test)]
+mod endpoint;
 
 pub fn client() -> &'static AsyncOnce<Client> {
     lazy_static! {

@@ -11,7 +11,9 @@ impl<'a> IntlMessage<'a> {
                 ("authentication_failed", "Authentication process failed. User does not exist or invalid credentials."),
                 ("authentication_required", "You must be authenticated."),
                 ("authentication_success", "Authentication process success."),
+                ("email_already_exist", "Email already exist."),
                 ("forbidden_operation", "Forbidden operation."),
+                ("internal_error", "Internal error."),
                 ("usr_created", "User creation process success."),
                 ("usr_edited", "User edited successfully."),
                 ("usr_founded", "User research process success.")

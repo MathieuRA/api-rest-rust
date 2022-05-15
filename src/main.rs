@@ -15,7 +15,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::database::mongo::MongoDB;
 use crate::intl_message::IntlMessage;
-use crate::routes::{ping, users};
+use crate::routes::{ping, user};
 use crate::structs::api_response::{ApiResponse, ApiResponseDetails};
 
 mod database;
@@ -56,11 +56,11 @@ async fn rocket_builder() -> Rocket<Build> {
             ping::ping_rt
         ])
         .mount("/api/v1", routes![
-            users::get_user_rt,
-            users::new_user_rt,
-            users::login_user_rt,
-            users::delete_user_rt,
-            users::edit_user_rt
+            user::get_user_rt,
+            user::new_user_rt,
+            user::login_user_rt,
+            user::delete_user_rt,
+            user::edit_user_rt
         ])
         .manage(IntlMessage::new())
         .manage(MongoDB::new("rust-api").await)
