@@ -1,9 +1,4 @@
-
-
 use mongodb::bson::doc;
-
-
-
 use rocket::http::{Cookie, CookieJar};
 use rocket::serde::json::Json;
 use rocket::serde::uuid::Uuid;
@@ -12,7 +7,7 @@ use rocket_contrib::json;
 
 use crate::{IntlMessage, MongoDB};
 use crate::models::user::{AuthTokenUser, CredentialUser, EditableUser, InsertableUser, ResponseUser, User};
-use crate::structs::api_response::{ApiResponse};
+use crate::structs::api_response::ApiResponse;
 
 const FAKE_EMAIL: &str = "to_prevent_time_based_account_enumeration";
 const FAKE_PASSWORD: &str = "$argon2i$v=19$m=4096,t=3,p=1$TWJKeTdoZ3pPWDdaS2dNTnpZN2g$TkFyv+ZHQVlER2hWlMBnq+DHTJvanckCTgx+ULeObAs";
@@ -47,6 +42,7 @@ pub async fn new_user_rt(mongo_db: &State<MongoDB>, intl_message: &State<IntlMes
 #[post("/users/login", format = "json", data = "<credential>")]
 pub async fn login_user_rt(mongo_db: &State<MongoDB>, intl_message: &State<IntlMessage<'_>>, cookies: &CookieJar<'_>, credential: Json<CredentialUser>) -> ApiResponse {
     let user = match mongo_db.get_users_coll()
+        // TODO: remove fake user creation at the login part. return notfound error instead
         .find_one(doc! { "name" : &credential.name }, None).await.unwrap() {
         Some(user) => user,
         None =>

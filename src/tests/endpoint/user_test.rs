@@ -1,12 +1,6 @@
-
 use rocket::http::{ContentType, Status};
 
-
-
-
-
 use crate::{ApiResponseDetails, IntlMessage};
-
 use crate::tests::client;
 
 const NEW_USER_BODY: &str = r##"{

@@ -5,13 +5,8 @@ extern crate dotenv_codegen;
 extern crate rocket;
 
 
-
 use dotenv::dotenv;
 use rocket::{Build, Request, Rocket};
-
-
-
-
 
 use crate::database::mongo::MongoDB;
 use crate::intl_message::IntlMessage;

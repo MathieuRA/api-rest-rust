@@ -1,13 +1,10 @@
-
 use std::fmt::Debug;
 
 use rocket::{Request, response, Response};
 use rocket::http::{ContentType, Status};
 use rocket::response::Responder;
-
 use rocket_contrib::json::JsonValue;
 use serde::{Deserialize, Serialize};
-
 
 #[derive(Debug)]
 pub struct ApiResponse {

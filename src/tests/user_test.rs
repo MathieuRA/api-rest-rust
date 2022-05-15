@@ -1,12 +1,5 @@
-
-
-
-
-
-
-
 use crate::{IntlMessage, MongoDB};
-use crate::models::user::{InsertableUser};
+use crate::models::user::InsertableUser;
 use crate::tests::client;
 
 const UNIT_TEST_INSERT_ONE: &str = "unit_test_one@mycleargames.com";

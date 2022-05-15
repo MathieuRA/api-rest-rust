@@ -1,7 +1,12 @@
 use serde::{Deserialize, Serialize};
 
-// That allow to impl optional struct. ie: impl FromRequest Optional<User>
 #[derive(Deserialize, Serialize, Debug)]
+/// That allow to impl optional struct.
+/// ```
+/// impl<'r> FromRequest<'r> for Optional<User>{
+///  ...
+/// }
+/// ```
 pub struct Optional<T> {
     pub some: Option<T>,
 }

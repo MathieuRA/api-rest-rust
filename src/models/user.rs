@@ -3,8 +3,8 @@ use mongodb::bson::{doc, Uuid as Uuid_mongo};
 use mongodb::error::{ErrorKind, WriteFailure};
 use rand::{Rng, thread_rng};
 use rand::distributions::Alphanumeric;
-use rocket::Request;
 use rocket::http::Status;
+use rocket::Request;
 use rocket::request::{FromRequest, Outcome};
 use serde::{Deserialize, Serialize};
 
@@ -67,16 +67,6 @@ impl AuthTokenUser {
 
 impl InsertableUser {
     pub async fn insert_one(mongo_db: &MongoDB, new_user: InsertableUser) -> Result<User, ApiResponse> {
-        /**
-        FIXME: SECURITY POINT
-        In case email already exist, we return a success response to avoid user enumeration from
-        the register functionality. But this have an high impact on the UX.
-        Define with the whole team, what behaviour should be adopted.
-        If UX is a prior, remove the FAKE_USER creation on the user_login route
-        coz it voluntary affect the app performance to avoid user enumeration from the login
-        functionality.
-        There is no sense to have a secure login route, but not the register route.
-         */
         let user = User::from_insertable(new_user);
         match mongo_db.get_users_coll().insert_one(&user, None).await {
             Ok(_) => {}
